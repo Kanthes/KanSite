@@ -11,17 +11,10 @@ from datetime import datetime, timedelta, date
 def index(request):
 	#latest_flood_list = Flood.objects.annotate(num_users=Count('users')).filter(num_users__gte=10).order_by('-timestamp')[:5] #5 latest floods with 10 or more users involved.
 	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now()-timedelta(days=3)).order_by('-timestamp')
-#	latest_flood_list = Flood.objects.order_by('-timestamp')[:5] #5 latest floods overall.
-#	template = loader.get_template('records/index.html')
-#	context = RequestContext(request, {
-#		'latest_flood_list': latest_flood_list,
-#	})
-#	return HttpResponse(template.render(context))
 	context = {'latest_flood_list':latest_flood_list}
 	return render(request, 'records/index.html', context)
 
 def flood(request, flood_id):
-	#return HttpResponse("You're looking at Flood ID #{0}".format(flood_id))
 	flood = get_object_or_404(Flood, pk=flood_id)
 	return render(request, 'records/flood.html', {'flood':flood})
 
@@ -34,9 +27,11 @@ def message(request, message_id):
 	return render(request, 'records/message.html', {'message':message})
 
 def reports_2016(request):
+	#Create a list of dictionaries containing all the dates with reports and number of reports for that date, and then turn that list of dictionaries into a sorted list of lists.
 	date_data = Report.objects.all().extra({'date_created' : "DATE(created_timestamp)"}).values('date_created').annotate(created_count=Count('id'))
 	date_data = map(lambda x: [x['date_created'], x['created_count']], date_data)
 	date_data.sort(key=lambda x: x[0])
+	#Create a list of dictionaries containing all the hours with reports and the number of reports for that hour, and then turn that list of dictionaries into a sorted list of lists.
 	hourly_data = Report.objects.all().extra({'time_created' : "EXTRACT(HOUR FROM created_timestamp)"}).values('time_created').annotate(created_count=Count('id'))
 	hourly_data = map(lambda x: [x['time_created'], int(x['created_count'])], hourly_data)
 	hourly_data.sort(key=lambda x: x[0])

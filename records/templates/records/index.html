@@ -14,7 +14,6 @@
 		<table border='1'>
 			<tr>
 				<th><input type="checkbox" onClick="toggle(this)" /></th>
-				<th>ID</th>
 				<th>Timestamp</th>
 				<th>Room</th>
 				<th>Users</th>
@@ -24,8 +23,7 @@
 			{% for flood in latest_flood_list %}
 				<tr>
 					<td><input type="checkbox" name="flood_checkbox" id="flood_checkbox{{ forloop.counter }}" value="{{ flood.id }}" /></td>
-					<td><a href="{% url 'records:flood' flood.id %}">{{ flood.id }}</a></td>
-					<td>{{ flood.timestamp|date }}</td>
+					<td><a href="{% url 'records:flood' flood.id %}">{{ flood.timestamp|date }}</a></td>
 					<td>{{ flood.room }}</td>
 					<td>{{ flood.users.count }}</td>
 					<td>{{ flood.messages.count }}</td>
