@@ -1,0 +1,15 @@
+<h1>{{ message.id }}</h1>
+<table border='1'>
+	<tr>
+		<th>Timestamp</th>
+		<th>Room</th>
+		<th>Username</th>
+		<th>Message</th>
+	</tr>
+	<tr>
+		<td><a href="{% url 'records:message' message.id %}">{{ message.timestamp|date }}</a></td>
+		<td>{{ message.room }}</td>
+		<td><a href="{% url 'records:user' message.username %}">{{ message.username }}</td>
+		<td>{{ message.body }}</td>
+	</tr>
+</table>

@@ -1,0 +1,68 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+				google.charts.load('current', {'packages': ['corechart', 'bar']});
+				google.charts.setOnLoadCallback(drawChart);
+
+				function drawChart() {
+					var data = google.visualization.arrayToDataTable([
+						['Date', 'Reports'],
+						{% for date in date_data %}
+						[new Date({{ date.0.year }}, {{ date.0.month|add:"-1" }}, {{ date.0.day }}),	{{ date.1 }}],
+						{% endfor %}
+					]);
+
+					var options = {
+						title: 'Daily reports',
+						curveType: 'function',
+						legend: {position: 'none'}
+					};
+
+					var chart = new google.visualization.ColumnChart(document.getElementById('date_chart'));
+
+					chart.draw(data, options);
+				}
+		</script>
+		<script type="text/javascript">
+				google.charts.load('current', {packages: ['corechart', 'bar']});
+				google.charts.setOnLoadCallback(drawBasic);
+
+				function drawBasic() {
+					var data = new google.visualization.DataTable();
+					data.addColumn('timeofday', 'Time of Day');
+					data.addColumn('number', 'Reports');
+
+					data.addRows([
+						{% for hour in hourly_data %}
+						[{v: [{{ hour.0 }}, 0, 0], f:'{{ hour.0 }}:00'}, {{ hour.1 }}],
+						{% endfor %}
+					]);
+
+					var options = {
+						title: 'Reports per hour',
+						hAxis: {
+							title: 'Hour (UTC+1)',
+							format: 'HH:mm',
+							viewWindow: {
+								min: [0, 0, 0],
+								max: [24, 0, 0]
+							}
+						},
+						vAxis: {
+							title: 'Reports'
+						},
+						legend: {position: 'none'}
+					};
+
+					var chart = new google.visualization.ColumnChart(document.getElementById('hourly_chart'));
+
+					chart.draw(data, options);
+				}
+		</script>
+	</head>
+	<body>
+			<div id="date_chart" style="height: 450px"></div>
+			<div id="hourly_chart" style="height: 450px"></div>
+	</body>
+</html>

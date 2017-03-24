@@ -1,0 +1,41 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+				google.charts.load('current', {'packages': ['corechart']});
+				google.charts.setOnLoadCallback(drawChart);
+
+				function drawChart() {
+					var data = new google.visualization.DataTable();
+					data.addColumn('datetime', 'Date');
+					{% for name in spam_pattern_names %}
+					data.addColumn('number', '{{ name }}')
+					{% endfor %}
+					data.addRows([
+						{% for dateandhour in date_list %}
+						[new Date("{{ dateandhour.0.isoformat }}"),	{{ dateandhour.1|join:", " }}],
+						{% endfor %}
+					]);
+
+					var options = {
+						title: 'Spambots per hour',
+						interpolateNulls: false,
+						hAxis: {
+							format: 'yyyy-MM-dd HH:mm',
+							viewWindow: {
+								min: new Date("{{ start_date.isoformat }}"),
+								max: new Date("{{ end_date.isoformat }}"),
+							},
+						},
+					};
+
+					var chart = new google.visualization.LineChart(document.getElementById('date_chart'));
+
+					chart.draw(data, options);
+				}
+		</script>
+	</head>
+	<body>
+			<div id="date_chart" style="height: 450px"></div>
+	</body>
+</html>

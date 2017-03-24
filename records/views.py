@@ -1,0 +1,76 @@
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Count
+from django.views import generic
+
+from records.models import Flood, User, Message, Report, SpamPattern, Spambot
+
+from datetime import datetime, timedelta, date
+
+# Create your views here.
+def index(request):
+	#latest_flood_list = Flood.objects.annotate(num_users=Count('users')).filter(num_users__gte=10).order_by('-timestamp')[:5] #5 latest floods with 10 or more users involved.
+	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now()-timedelta(days=3)).order_by('-timestamp')
+#	latest_flood_list = Flood.objects.order_by('-timestamp')[:5] #5 latest floods overall.
+#	template = loader.get_template('records/index.html')
+#	context = RequestContext(request, {
+#		'latest_flood_list': latest_flood_list,
+#	})
+#	return HttpResponse(template.render(context))
+	context = {'latest_flood_list':latest_flood_list}
+	return render(request, 'records/index.html', context)
+
+def flood(request, flood_id):
+	#return HttpResponse("You're looking at Flood ID #{0}".format(flood_id))
+	flood = get_object_or_404(Flood, pk=flood_id)
+	return render(request, 'records/flood.html', {'flood':flood})
+
+def user(request, user_name):
+	user = get_object_or_404(User, username=user_name)
+	return render(request, 'records/user.html', {'user':user})
+
+def message(request, message_id):
+	message = get_object_or_404(Message, pk=message_id)
+	return render(request, 'records/message.html', {'message':message})
+
+def reports_2016(request):
+	date_data = Report.objects.all().extra({'date_created' : "DATE(created_timestamp)"}).values('date_created').annotate(created_count=Count('id'))
+	date_data = map(lambda x: [x['date_created'], x['created_count']], date_data)
+	date_data.sort(key=lambda x: x[0])
+	hourly_data = Report.objects.all().extra({'time_created' : "EXTRACT(HOUR FROM created_timestamp)"}).values('time_created').annotate(created_count=Count('id'))
+	hourly_data = map(lambda x: [x['time_created'], int(x['created_count'])], hourly_data)
+	hourly_data.sort(key=lambda x: x[0])
+	context = {'date_data':date_data, 'hourly_data':hourly_data}
+	return render(request, 'records/2016report.html', context)
+
+def spamreport(request, start_year, start_month, start_day, end_year, end_month, end_day):
+	#Create datetime objects based of URL variables.
+	start_date = datetime(year=int(start_year), month=int(start_month), day=int(start_day))
+	end_date = datetime(year=int(end_year), month=int(end_month), day=int(end_day))
+
+	#Get the SpamPatterns active in between the start and end date.
+	spam_patterns = SpamPattern.objects.filter(spambot__timestamp__range=(start_date, end_date)).distinct()
+	spam_pattern_names = [spam_pattern.name for spam_pattern in spam_patterns]
+
+	#Create a dictionary of all possible date+hour combinations between start and end date by creating a list of lists, each containing the datetime and a list containing number of nulls corresponding with the number of active spampatterns.
+	date_dict = dict([[start_date + timedelta(hours=x), ['null']*len(spam_patterns)] for x in range(0, int((end_date-start_date).total_seconds()//3600))])
+
+	#For each SpamPattern, get the hourly spambots and overwrite the dictionary at the relevant positions.
+	for i in range(0, len(spam_patterns)):
+		#Create a QuerySet that appends the raw Date and the raw Hour based on the timestamp, along with the number of bots for each combination of the two.
+		hourly_spambots = Spambot.objects.filter(timestamp__range=(start_date, end_date), pattern=spam_patterns[i].id).extra({'date_created':"DATE(timestamp)", 'hour_created':"EXTRACT(HOUR FROM timestamp)"}).values('date_created', 'hour_created').annotate(created_count=Count('id'))
+		#Now overwrite the dictionary by populating it with the data from the Queryset.
+		for hourly_spambot in hourly_spambots:
+			date_dict[datetime(year=hourly_spambot['date_created'].year, month=hourly_spambot['date_created'].month, day=hourly_spambot['date_created'].day, hour=hourly_spambot['hour_created'])][i] = hourly_spambot['created_count']
+
+	#Finally, turn the dictionary into a sorted list of key+value combinations.
+	date_list = sorted([[key, date_dict[key]] for key in date_dict.keys()])
+
+	context = {'spam_pattern_names':spam_pattern_names, 'date_list':date_list, 'start_date':start_date, 'end_date':end_date}
+	return render(request, 'records/spamreport.html', context)
+
+def uniqueusernames(request):
+	flood_ids = request.GET.getlist("flood_checkbox")
+	usernames = User.objects.distinct().filter(flood__id__in=flood_ids)
+	usernames = [user.username for user in usernames]
+	return render(request, 'records/uniqueusernames.html', {'usernames':usernames})

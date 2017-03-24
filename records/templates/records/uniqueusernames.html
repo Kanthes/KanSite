@@ -1,0 +1,17 @@
+<html>
+	<head>
+	</head>
+	<body>
+		{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+		<table border='1'>
+			<tr>
+				<th>Username</th>
+			</tr>
+			{% for username in usernames %}
+			<tr>
+				<td>{{ username }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>

@@ -1,0 +1,30 @@
+<h1>{{ user.username }}</h1>
+Created at: {{ user.creation_date|date }}<br><br>
+
+<table border='1'>
+	<tr>
+		<th>Flood(s)</th>
+	</tr>
+	{% for flood in user.flood_set.all %}
+		<tr>
+			<td><a href="{% url 'records:flood' flood.id %}">{{ flood.id }}</a></td>
+		</tr>
+	{% endfor %}
+</table>
+
+<table border='1'>
+	<tr>
+		<th>Timestamp</th>
+		<th>Room</th>
+		<th>Username</th>
+		<th>Message</th>
+	</tr>
+	{% for message in user.message_set.all %}
+		<tr>
+			<td><a href="{% url 'records:message' message.id %}">{{ message.timestamp|date }}</a></td>
+			<td>{{ message.room }}</td>
+			<td><a href="{% url 'records:user' message.username %}">{{ message.username }}</td>
+			<td>{{ message.body }}</td>
+		</tr>
+	{% endfor %}
+</table>
