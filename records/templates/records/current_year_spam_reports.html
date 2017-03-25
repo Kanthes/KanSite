@@ -1,0 +1,20 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<table border='1'>
+			<tr>
+				<th>Week Number</th>
+				<th>Start date</th>
+				<th>End date</th>
+			</tr>
+			{% for date in list_of_dates %}
+			<tr>
+				<td><a href="{% url 'records:spamreport' start_year=date.0|date:"Y" start_month=date.0|date:"m" start_day=date.0|date:"d" end_year=date.1|date:"Y" end_month=date.1|date:"m" end_day=date.1|date:"d" %}">{{ forloop.counter }}</a></td>
+				<td>{{ date.0|date:"Y-m-d" }}</td>
+				<td>{{ date.1|date:"Y-m-d" }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>
