@@ -82,3 +82,8 @@ def current_year_spam_reports(request):
 	list_of_dates = [start_date + timedelta(days=7)*i for i in range(0, (end_date-start_date).days//7)]
 	list_of_dates = [[date, date+timedelta(days=7)] for date in list_of_dates]
 	return render(request, 'records/current_year_spam_reports.html', {'list_of_dates':list_of_dates})
+
+def top_spammers(request):
+	user_objects = User.objects.annotate(message_count=Count('message')).order_by('-message_count')[:50]
+	user_objects = [[user.username, user.message_count] for user in user_objects]
+	return render(request, 'records/list.html', {'list_of_lists':user_objects})
