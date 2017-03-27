@@ -1,26 +1,36 @@
-<h1>{{ flood.id }}</h1>
-Key: {{ flood.pattern }}<br><br>
+<html>
+	<head>
+		<title>Flood ID #{{ flood.id }}</title>
+	</head>
+	<body>
+		<h1>{{ flood.id }}</h1>
+		Key: {{ flood.pattern }}<br><br>
 
-<table border='1'>
-	<tr><th>User(s)</th></tr>
-	{% for user in flood.users.all %}
-		<tr><td><a href="{% url 'records:user' user.username %}">{{ user.username }}</a></td><tr>
-	{% endfor %}
-</table>
+		<table border='1'>
+			<tr><th>User(s)</th></tr>
+			{% for user in flood.users.all %}
+				<tr><td><a href="{% url 'records:user' user.username %}">{{ user.username }}</a></td><tr>
+			{% endfor %}
+		</table>
 
-<table border='1'>
-	<tr>
-		<th>Timestamp</th>
-		<th>Room</th>
-		<th>Username</th>
-		<th>Message</th>
-	</tr>
-	{% for message in flood.messages.all %}
-		<tr>
-			<td><a href="{% url 'records:message' message.id %}">{{ message.timestamp|date }}</a></td>
-			<td>{{ message.room }}</td>
-			<td><a href="{% url 'records:user' message.username %}">{{ message.username }}</td>
-			<td>{{ message.body }}</td>
-		</tr>
-	{% endfor %}
-</table>
+		<table border='1'>
+			<tr>
+				<th>Timestamp</th>
+				<th>Room</th>
+				<th>Username</th>
+				<th>Message</th>
+			</tr>
+			{% for message in flood.messages.all %}
+				<tr>
+					<td><a href="{% url 'records:message' message.id %}">{{ message.timestamp|date }}</a></td>
+					<td>{{ message.room }}</td>
+					<td><a href="{% url 'records:user' message.username %}">{{ message.username }}</td>
+					<td>{{ message.body }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>
+
+
+

@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<title>Floodbot index</title>
 		<script language="JavaScript">
 		function toggle(source) {
 			checkboxes = document.getElementsByName('flood_checkbox');
@@ -10,11 +11,12 @@
 		</script>
 	</head>
 	<body>
+		<h1>Floodbots from the last 3 days.</h1>
 		<form action="{% url 'records:uniqueusernames' %}" method="get">
 		<table border='1'>
 			<tr>
 				<th><input type="checkbox" onClick="toggle(this)" /></th>
-				<th>Timestamp</th>
+				<th>Timestamp (UTC)</th>
 				<th>Room</th>
 				<th>Users</th>
 				<th>Messages</th>
