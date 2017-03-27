@@ -29,7 +29,7 @@
 					<td>{{ flood.room }}</td>
 					<td>{{ flood.users.count }}</td>
 					<td>{{ flood.messages.count }}</td>
-					<td>{{ flood.messages.all.0.body }}</td>
+					<td>{{ flood.messages.all.0.body|escape }}</td>
 			{% endfor %}
 		</table>
 		<input type="submit" value="Unique Usernames" />

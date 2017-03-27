@@ -15,7 +15,7 @@
 				<td><a href="{% url 'records:message' message.id %}">{{ message.timestamp|date }}</a></td>
 				<td>{{ message.room }}</td>
 				<td><a href="{% url 'records:user' message.username %}">{{ message.username }}</td>
-				<td>{{ message.body }}</td>
+				<td>{{ message.body|escape }}</td>
 			</tr>
 		</table>
 	</body>
