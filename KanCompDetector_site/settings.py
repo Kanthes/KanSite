@@ -24,7 +24,7 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['193.111.136.150']
 
 
 # Application definition
@@ -91,3 +91,12 @@ STATIC_URL = '/static/'
 DEFAULT_CHARSET = 'utf-8'
 
 DATE_FORMAT = 'Y-m-d H:i:s'
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]
