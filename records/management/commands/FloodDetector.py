@@ -8,11 +8,7 @@ from unidecode import unidecode
 import logging
 import time
 
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "KanCompDetector_site.settings")
 import records.models as models
-import django
-django.setup()
 
 ten_seconds = timedelta(seconds=10)
 one_hour = timedelta(hours=1)

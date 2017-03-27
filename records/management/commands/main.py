@@ -11,8 +11,12 @@ from datetime import datetime
 import ConfigParser
 import os
 
-class MainContainer():
-	def __init__(self):
+from django.core.management.base import BaseCommand, CommandError
+
+class Command(BaseCommand):
+	help = "Runs the entire spam & floodbot detection script."
+
+	def handle(self, *args, **options):
 		logging.basicConfig(level=logging.INFO)
 
 		logging.info("Loading config..")
@@ -44,7 +48,8 @@ class MainContainer():
 		self.LinkBasedSpamDetector = LinkBasedSpamDetector(self, self.ChatFeedC.get_queue(lifo=True), apihandler=self.TwitchAPIHandlerC, reporthandler=self.MechanizedTwitchC)
 		start_daemon_thread(self.LinkBasedSpamDetector.parse_input_queue)
 		logging.info("Done.")
-
+		
+		self.parse_input()
 
 	def parse_input(self):
 		while(True):
@@ -94,7 +99,3 @@ class MainContainer():
 		print "Users in report queue: "+str(self.MechanizedTwitchC.report_queue.qsize())
 		print "API calls in handler queue: "+str(self.TwitchAPIHandlerC.passive_request_queue.qsize())
 		print "Latest message received: "+str(self.ChatFeedC.latest_message)
-
-
-main = MainContainer()
-main.parse_input()

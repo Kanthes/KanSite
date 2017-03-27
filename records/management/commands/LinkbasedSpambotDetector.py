@@ -10,17 +10,12 @@ from ssl import SSLError
 import json
 import time
 import Queue
-import webbrowser
 import logging
 from unidecode import unidecode
 import redis
 import threading
 
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "KanCompDetector_site.settings")
 import records.models as models
-import django
-django.setup()
 
 seven_days = timedelta(days=7)
 default_creation_date = datetime(1990, 1, 1, 0, 0, 0)
