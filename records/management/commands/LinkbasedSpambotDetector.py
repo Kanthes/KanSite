@@ -110,7 +110,7 @@ class LinkBasedSpamDetector():
 	def __init__(self, parent, input_queue, apihandler=None, reporthandler=None):
 		self.parent = parent
 		self.input_queue = input_queue
-		self.link_pattern = re.compile("(https?:\/\/)?([-a-zA-Z0-9@:%_\\+~#=\u24b6-\u24cf]+\.)+([a-z\u24b6-\u24cf]{2,6})([-a-zA-Z0-9@:%_\\+.~#?&//=\u24b6-\u24cf]*)") #Linkify pattern used by Twitch.
+		self.link_pattern = re.compile("(https?:\/\/)?([-a-zA-Z0-9@:%_\\+~#=\u24b6-\u24e9]+\.)+([a-z\u24b6-\u24e9]{2,6})([-a-zA-Z0-9@:%_\\+.~#?&//=\u24b6-\u24e9]*)") #Linkify pattern used by Twitch.
 		self.spam_pattern_objects = []
 
 		self.redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
