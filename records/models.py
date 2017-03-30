@@ -23,6 +23,7 @@ class Flood(models.Model):
 	room = models.CharField(max_length=40)
 	users = models.ManyToManyField(User)
 	messages = models.ManyToManyField(Message)
+	ident_msg = models.BooleanField(default=None)
 
 	def __str__(self):
 		return str(self.id)

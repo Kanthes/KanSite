@@ -20,6 +20,7 @@
 				<th>Room</th>
 				<th>Users</th>
 				<th>Messages</th>
+				<th>All Messages Identical</th>
 				<th>Message</th>
 			</tr>
 			{% for flood in latest_flood_list %}
@@ -29,6 +30,7 @@
 					<td>{{ flood.room }}</td>
 					<td>{{ flood.users.count }}</td>
 					<td>{{ flood.messages.count }}</td>
+					<td>{{ flood.ident_msg }}</td>
 					<td>{{ flood.messages.all.0.body|escape }}</td>
 			{% endfor %}
 		</table>

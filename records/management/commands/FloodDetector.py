@@ -16,6 +16,14 @@ one_day = timedelta(days=1)
 seven_days = timedelta(days=7)
 default_creation_date = datetime(1990, 1, 1, 0, 0, 0)
 
+def checkEqual(iterator):
+    iterator = iter(iterator)
+    try:
+        first = next(iterator)
+    except StopIteration:
+        return True
+    return all(first == rest for rest in iterator)
+
 class FloodDetectorMain():
 #----------------------------------------------------------------------------------------------------------------
 	class Pattern():
@@ -143,7 +151,7 @@ class FloodDetectorMain():
 			return response.format(*response_values)
 
 		def record(self):
-			flood_object = models.Flood(pattern=self.key, timestamp=self.timestamp, room=self.room)
+			flood_object = models.Flood(pattern=self.key, timestamp=self.timestamp, room=self.room, ident_msg=checkEqual([message.message for message in self.messages]))
 			flood_object.save()
 			for username in self.users:
 				user = self.users[username]
