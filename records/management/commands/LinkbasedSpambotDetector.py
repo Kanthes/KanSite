@@ -110,7 +110,7 @@ class LinkBasedSpamDetector():
 	def __init__(self, parent, input_queue, apihandler=None, reporthandler=None):
 		self.parent = parent
 		self.input_queue = input_queue
-		self.link_pattern = re.compile("(https?:\/\/)?([-a-zA-Z0-9@:%_\\+~#=\u24b6-\u24e9]+\.)+([a-z\u24b6-\u24e9]{2,6})([-a-zA-Z0-9@:%_\\+.~#?&//=\u24b6-\u24e9]*)") #Linkify pattern used by Twitch.
+		self.link_pattern = re.compile(ur"(https?:\/\/)?([-a-zA-Z0-9@:%_\\+~#=\u24b6-\u24e9]+\.)+([a-z\u24b6-\u24e9]{2,6})([-a-zA-Z0-9@:%_\\+.~#?&//=\u24b6-\u24e9]*)") #Linkify pattern used by Twitch.
 		self.spam_pattern_objects = []
 
 		self.redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
@@ -194,7 +194,6 @@ class LinkBasedSpamDetector():
 							break
 						domain += group
 					if(domain not in ["66.media.tumblr.com", "67.media.tumblr.com", "9gag.com", "agar.io", "amazon.com", "amazon.de", "battle.net", "battlefy.com", "battlelog.battlefield.com", "beam.pro", "beta.deadbydaylight.com", "beta.nightbot.tv", "blog.twitch.tv", "branebot.com", "bungie.net", "cdn.discordapp.com", "challengeme.gg", "challonge.com", "change.org", "chrome.google.com", "clips.twitch.tv", "curse.com", "danbooru.donmai.us", "discord.gg", "discordapp.com", "docs.google.com", "docs.nightbot.tv", "donation.wizebot.tv", "donationalerts.ru", "dotabuff.com", "drive.google.com", "dropbox.com", "dubtrack.fm", "ebay.com", "embed.gyazo.com", "en.wikipedia.org", "eu.battle.net", "facebook.com", "faceit.com", "forum.gamer.com.tw", "frankerfacez.com", "futhead.com", "g2a.com", "gamewisp.com", "gaming.youtube.com", "gamingforgood.net", "gfycat.com", "giphy.com", "gitcoin.gg", "github.com", "giveaway.nikolarn.tv", "gleam.io", "gofundme.com", "goodgame.ru", "google.com", "greenmangaming.com", "gspots.ru", "guld.tv", "gyazo.com", "hearthpwn.com", "help.twitch.tv", "hitbox.tv", "hnlbot.com", "i.gyazo.com", "i.hizliresim.com", "i.imgur.com", "i.ytimg.com", "images.akamai.steamusercontent.com", "imgur.com", "instagram.com", "instant-gaming.com", "jackbox.tv", "jaspyshobbyland.com", "kadgar.net", "link.twitch.tv", "m.facebook.com", "m.imgur.com", "m.youtube.com", "manage.betterttv.net", "meatspin.com", "media.giphy.com", "mediafire.com", "mobile.twitter.com", "monster.cat", "multistre.am", "multitwitch.tv", "new.vk.com", "nexusmods.com", "nightbot.tv", "nightdev.com", "oddshot.tv", "open.spotify.com", "osu.ppy.sh", "pastebin.com", "pathofexile.com", "patreon.com", "paypal.com", "paypal.me", "pbs.twimg.com", "pcpartpicker.com", "periscope.tv", "play.eslgaming.com", "play.spotify.com", "plays.tv", "plug.dj", "poe.trade", "poeurl.com", "popflash.site", "pornhub.com", "postimg.org", "pp.vk.me", "prnt.sc", "prntscr.com", "ptt.cc", "puu.sh", "pyx-2.pretendyoure.xyz", "rbtv.to", "reddit.com", "ref.nikolarn.tv", "referralskins.com", "revlo.co", "rewards.tinybuild.com", "robertsspaceindustries.com", "roblox.com", "rollcsgo.ru", "runebet.com", "s-media-cache-ak0.pinimg.com", "sc2replaystats.com", "scr.hu", "scrap.tf", "screenshot.sh", "secure.twitch.tv", "seeingblue.us", "skinspin.gg", "slither.io", "smash.gg", "socialclub.rockstargames.com", "society.gg", "soundcloud.com", "speedrun.com", "speedtest.net", "spoti.fi", "static-cdn.jtvnw.net", "steamcommunity.com", "steamgifts.co", "store.steampowered.com", "strawpoll.de", "strawpoll.me", "streamad.info", "streambot.com", "streampoll.tv", "supermariomakerbookmark.nintendo.net", "teespring.com", "tipeeestream.com", "tosbase.com", "tppvisuals.com", "ts3.digitalthemepark.com", "twitch-dj.ru", "twitch.drycactus.com", "twitch.moobot.tv", "twitch.tv", "twitchalerts.com", "twitter.com", "twitter.nikolarn.tv", "umggaming.com", "upload.wikimedia.org", "us.battle.net", "vignette2.wikia.nocookie.net", "vine.co", "virtus.pro", "virusbot.xyz", "vivbot.com", "vk.com", "waa.ai", "wiki.teamliquid.net", "wizebot.tv", "wn.nr", "wowhead.com", "wreckvge.nikolarn.tv", "xboxdvr.com", "youtu.be", "youtube.com"]):
-					#if(domain in ["0rz.tw", "34.gs", "3cm.kz", "3utilities.com", "55555.ru", "5z8.info", "8b.kz", "9nl.es", "aba.su", "adres.club", "bit.ly", "bitb.ee", "bitly.com", "bmeo.org", "bn.gy", "bounceme.net", "c2y.me", "catcut.net", "cia.co.il", "cut.cc", "cy8.co", "ddns.net", "dy.cx", "elek.ru", "exci.se", "fw.gg", "getmysong.ml", "gg.gg", "goo.gl", "gotdns.ch", "gotv.co", "gu.ma", "heh.xyz", "hnng.moe", "hoc.xyz", "hopto.org", "hria.org", "i2c.sk", "ibvu.gu.ma", "imageur.org", "imgcross.com", "imx.tw", "ipx.cc", "is.gd", "iturl.nl", "iurl.guru", "j.mp", "jin.ni", "kll.me", "kortlink.no", "kos.su", "kurl.se", "li.ro", "link.limo", "ly2.ru", "make.my", "mbcurl.me", "miu.tw", "mni.su", "mobmas.rus", "mrty.tv", "my2url.com", "myvnc.com", "noip.com", "oi.ma", "ool.io", "or.pe", "otset.ee", "ow.ly", "qrurl.cc", "redirectme.net", "servebeer.com", "serveblog.net", "sexyladys.info", "shr.ooo", "sn.im", "snip.bz", "snip.li", "surfe.be", "sytes.net", "t.co", "tav.so", "theurl.co", "tiny.cc", "tiny.ph", "tiny.pl", "tinyurl.com", "tllg.net", "tr.im", "ur.qa", "url.ie", "url.mn", "urlbox.eu", "usurpator.ml", "ux9.de", "vzturl.com", "w.atch.me", "wasd.cf", "wbt.link", "webhop.me", "wte.su", "youl.ink", "zo.gd"]):
 						link = ''.join(individual_link)
 						current_message.links[link] = None
 
@@ -224,9 +223,8 @@ class LinkBasedSpamDetector():
 
 		for current_message in user_queue:
 			#Populate the link dictionary with 3ventic's link analysis dictionaries.
-			if(len(current_message.links) > 0):
-				for link in current_message.links:
-					current_message.links[link] = self.analyse_link(link)
+			for link in current_message.links:
+				current_message.links[link] = self.analyse_link(link)
 			#If the user isn't tracked, match against all exisating spam pattern objects.
 			if(not tracked):
 				for spam_pattern in self.spam_pattern_objects:
@@ -263,7 +261,7 @@ class LinkBasedSpamDetector():
 			return json.loads(response)
 		else: #Redis get failed, need to manually get it.
 			try:
-				link_analysis_page = urllib2.urlopen("https://ohbot.3v.fi/query/urlquery?q={0}".format(quote(link)), timeout=10)
+				link_analysis_page = urllib2.urlopen("https://ohbot.3v.fi/query/urlquery?q={0}".format(quote(link.encode('utf-8'))), timeout=10)
 			except urllib2.HTTPError as e:
 				if(e.code not in [404, 500]):
 					logging.info("Status code: {0}\nReason: {1}\nLink: {2}".format(e.code, e.reason, link))
