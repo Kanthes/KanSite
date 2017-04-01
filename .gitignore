@@ -2,3 +2,4 @@ settings.cfg
 *.pyc
 KanSite/**
 static/**
+records/management/commands/phantomjs
