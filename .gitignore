@@ -3,3 +3,4 @@ settings.cfg
 KanSite/**
 static/**
 records/management/commands/phantomjs
+ghostdriver.log
