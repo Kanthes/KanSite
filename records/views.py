@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.views import generic
 
 from records.models import Flood, User, Message, Report, SpamPattern, Spambot
+from records.tasks import add
 
 from datetime import datetime, timedelta, date
 
@@ -87,3 +88,7 @@ def top_spammers(request):
 	user_objects = User.objects.annotate(message_count=Count('message')).order_by('-message_count')[:50]
 	user_objects = [[user.username, user.message_count] for user in user_objects]
 	return render(request, 'records/list.html', {'list_of_lists':user_objects})
+
+def task_test(request):
+	add.delay(2)
+	return HttpResponse("Hello!")

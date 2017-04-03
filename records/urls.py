@@ -12,4 +12,5 @@ urlpatterns = [
 	url(r'^spamreport/(?P<start_year>\d{4})(?P<start_month>\d{2})(?P<start_day>\d{2})/(?P<end_year>\d{4})(?P<end_month>\d{2})(?P<end_day>\d{2})/?$', views.spamreport, name='spamreport'),
 	url(r'^uniqueusernames/?$', views.uniqueusernames, name='uniqueusernames'),
 	url(r'^topspammers/?$', views.top_spammers, name='topspammers'),
+	url(r'^task_test/?$', views.task_test, name='task_test'),
 ]
