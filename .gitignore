@@ -4,3 +4,5 @@ KanSite/**
 static/**
 records/management/commands/phantomjs
 ghostdriver.log
+celerybeat-schedule
+celerybeat.pid
