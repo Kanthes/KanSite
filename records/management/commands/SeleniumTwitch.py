@@ -2,7 +2,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 
-browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true', '--ssl-protocol=any'], desired_capabilities=dcap)
+browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true', '--ssl-protocol=any'])
 browser.set_page_load_timeout(10)
 print "Browser created."
 browser.get("http://www.twitch.tv/login")

@@ -2,7 +2,7 @@ settings.cfg
 *.pyc
 KanSite/**
 static/**
-records/management/commands/phantomjs
+*phantomjs
 ghostdriver.log
 celerybeat-schedule
 celerybeat.pid

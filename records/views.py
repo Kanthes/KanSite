@@ -4,7 +4,8 @@ from django.db.models import Count
 from django.views import generic
 
 from records.models import Flood, User, Message, Report, SpamPattern, Spambot
-from records.tasks import add
+
+from records.tasks import login
 
 from datetime import datetime, timedelta, date
 
@@ -84,11 +85,8 @@ def current_year_spam_reports(request):
 	list_of_dates = [[date, date+timedelta(days=7)] for date in list_of_dates]
 	return render(request, 'records/current_year_spam_reports.html', {'list_of_dates':list_of_dates})
 
-def top_spammers(request):
-	user_objects = User.objects.annotate(message_count=Count('message')).order_by('-message_count')[:50]
-	user_objects = [[user.username, user.message_count] for user in user_objects]
-	return render(request, 'records/list.html', {'list_of_lists':user_objects})
-
-def task_test(request):
-	add.delay(2)
-	return HttpResponse("Hello!")
+def twitch_login(request):
+	result = login.delay()
+	html = result.get(timeout=60)
+	#return HttpResponse("Hello!")
+	return HttpResponse(html)
