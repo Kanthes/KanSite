@@ -5,8 +5,6 @@ from django.views import generic
 
 from records.models import Flood, User, Message, Report, SpamPattern, Spambot
 
-from records.tasks import login
-
 from datetime import datetime, timedelta, date
 
 # Create your views here.
@@ -85,8 +83,6 @@ def current_year_spam_reports(request):
 	list_of_dates = [[date, date+timedelta(days=7)] for date in list_of_dates]
 	return render(request, 'records/current_year_spam_reports.html', {'list_of_dates':list_of_dates})
 
-def twitch_login(request):
-	result = login.delay()
-	html = result.get(timeout=60)
-	#return HttpResponse("Hello!")
-	return HttpResponse(html)
+def spambot_log(request):
+	spambot_objects = Spambot.objects.order_by('-timestamp')[:50]
+	return render(request, 'records/spambot_log.html', {'spambot_objects':spambot_objects})

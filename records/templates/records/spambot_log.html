@@ -1,0 +1,2 @@
+{% load tz %}{% timezone "America/Los_Angeles" %}{% for spambot in spambot_objects %}{{ spambot.user.username }}<!>{{ spambot.timestamp|date:"Y-m-d h:i:s A T" }}<!>{{ spambot.messages.all.0.room }}<!>#42<!>spam bot-!--!-Messages:-!-{% for message in spambot.messages.all %}{{ message.timestamp|date:"Y-m-d h:i:s A T" }} {{ message.room }} {{ message.body }}-!-{% endfor %}<!>false<!>{{ spambot.messages.all.0.body }}
+{% endfor %}{% endtimezone %}
