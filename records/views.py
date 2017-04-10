@@ -6,11 +6,12 @@ from django.views import generic
 from records.models import Flood, User, Message, Report, SpamPattern, Spambot
 
 from datetime import datetime, timedelta, date
+import pytz
 
 # Create your views here.
 def index(request):
 	#latest_flood_list = Flood.objects.annotate(num_users=Count('users')).filter(num_users__gte=10).order_by('-timestamp')[:5] #5 latest floods with 10 or more users involved.
-	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now()-timedelta(days=3)).order_by('-timestamp')
+	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now(pytz.utc)-timedelta(days=3)).order_by('-timestamp')
 	context = {'latest_flood_list':latest_flood_list}
 	return render(request, 'records/index.html', context)
 
@@ -73,8 +74,8 @@ def uniqueusernames(request):
 	return render(request, 'records/uniqueusernames.html', {'usernames':usernames})
 
 def current_year_spam_reports(request):
-	start_date = datetime(datetime.now().year, 01, 01)
-	end_date = datetime(datetime.now().year+1, 01, 01)
+	start_date = datetime(datetime.now(pytz.utc).year, 01, 01)
+	end_date = datetime(datetime.now(pytz.utc).year+1, 01, 01)
 	while(start_date.weekday() != 0):
 		start_date += timedelta(days=1)
 	while(end_date.weekday() != 0):

@@ -118,3 +118,9 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_IMPORTS = [
     'records.tasks',
 ]
+
+import warnings
+warnings.filterwarnings(
+    'error', r"DateTimeField .* received a naive datetime",
+    RuntimeWarning, r'django\.db\.models\.fields',
+)
