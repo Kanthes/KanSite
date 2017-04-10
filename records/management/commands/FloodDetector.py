@@ -10,6 +10,7 @@ import logging
 import time
 
 import records.models as models
+from django.utils.timezone import make_aware
 
 ten_seconds = timedelta(seconds=10)
 one_hour = timedelta(hours=1)
@@ -156,8 +157,8 @@ class FloodDetectorMain():
 			flood_object.save()
 			for username in self.users:
 				user = self.users[username]
-				#Uses get_or_create because user could exist in database since before.
-				user_object = models.User.objects.get_or_create(username=user.username, creation_date=user.creation_date)[0]
+				#Uses get_or_create because user could exist in database since before. For some reason Django thinks the datetime passed here is naive, so I'm making it aware to be sure.
+				user_object = models.User.objects.get_or_create(username=user.username, creation_date=make_aware(user.creation_date))[0]
 				user_object.save()
 				flood_object.users.add(user_object)
 				for message in user.messages:
