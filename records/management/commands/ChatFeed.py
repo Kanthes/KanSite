@@ -88,8 +88,8 @@ class ChatFeed():
 					if(len(self.current_batch.messages) >= MessageBatch.batch_size):
 						batch = self.current_batch
 						for i in self.queues:
-							if(i.qsize() >= 1000):
-								logging.warning("WARNING, a queue has exceeded 1000 entries and has been cleared.")
+							if(i.qsize() >= 100):
+								logging.warning("WARNING, a queue has exceeded 100 entries and has been cleared.")
 								while (not i.empty()):
 									i.get()
 							i.put(batch)

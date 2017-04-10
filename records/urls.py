@@ -1,9 +1,11 @@
 from django.conf.urls import url
+from django.views.decorators.cache import cache_page
 
 from records import views
 
 urlpatterns = [
-	url(r'^$', views.index, name='index'),
+	url(r'^$', cache_page(60)(views.index), name='index'),
+	url(r'^long_index/?$', cache_page(60 * 15)(views.long_index), name='long_index'),
 	url(r'^flood/(?P<flood_id>\d+)/?$', views.flood, name='flood'),
 	url(r'^user/(?P<user_name>[\w\d_]+)/?$', views.user, name='user'),
 	url(r'^message/(?P<message_id>\d+)/?$', views.message, name='message'),

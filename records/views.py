@@ -15,6 +15,11 @@ def index(request):
 	context = {'latest_flood_list':latest_flood_list}
 	return render(request, 'records/index.html', context)
 
+def long_index(request):
+	flood_objects = Flood.objects.annotate(user_count=Count('users')).filter(user_count__gte=10, ident_msg=False, timestamp__gte=datetime(2017, 2, 1, 0, 0, 0, 0, pytz.utc)).order_by('-timestamp')
+	context = {'latest_flood_list':flood_objects}
+	return render(request, 'records/index.html', context)	
+
 def flood(request, flood_id):
 	flood = get_object_or_404(Flood, pk=flood_id)
 	return render(request, 'records/flood.html', {'flood':flood})
@@ -41,8 +46,8 @@ def reports_2016(request):
 
 def spamreport(request, start_year, start_month, start_day, end_year, end_month, end_day):
 	#Create datetime objects based of URL variables.
-	start_date = datetime(year=int(start_year), month=int(start_month), day=int(start_day))
-	end_date = datetime(year=int(end_year), month=int(end_month), day=int(end_day))
+	start_date = datetime(year=int(start_year), month=int(start_month), day=int(start_day), tzinfo=pytz.utc)
+	end_date = datetime(year=int(end_year), month=int(end_month), day=int(end_day), tzinfo=pytz.utc)
 
 	#Get the SpamPatterns active in between the start and end date.
 	spam_patterns = SpamPattern.objects.filter(spambot__timestamp__range=(start_date, end_date)).distinct()
@@ -60,7 +65,7 @@ def spamreport(request, start_year, start_month, start_day, end_year, end_month,
 			hourly_spambots = Spambot.objects.filter(timestamp__range=(start_date, end_date), pattern=spam_patterns[i].id).extra({'date_created':"DATE(timestamp)", 'hour_created':"EXTRACT(HOUR FROM timestamp)"}).values('date_created', 'hour_created').annotate(created_count=Count('id'))
 			#Now overwrite the dictionary by populating it with the data from the Queryset.
 			for hourly_spambot in hourly_spambots:
-				date_dict[datetime(year=hourly_spambot['date_created'].year, month=hourly_spambot['date_created'].month, day=hourly_spambot['date_created'].day, hour=hourly_spambot['hour_created'])][i] = hourly_spambot['created_count']
+				date_dict[datetime(year=hourly_spambot['date_created'].year, month=hourly_spambot['date_created'].month, day=hourly_spambot['date_created'].day, hour=hourly_spambot['hour_created'], tzinfo=pytz.utc)][i] = hourly_spambot['created_count']
 
 		#Finally, turn the dictionary into a sorted list of key+value combinations.
 		date_list = sorted([[key, date_dict[key]] for key in date_dict.keys()])

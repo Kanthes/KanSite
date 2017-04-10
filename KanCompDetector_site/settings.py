@@ -113,16 +113,33 @@ TEMPLATES = [
     },
 ]
 
+# Celery
+
 BROKER_URL = 'redis://localhost:6379'
+
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
 CELERY_ACCEPT_CONTENT = ['application/json']
+
 CELERY_TASK_SERIALIZER = 'json'
+
 CELERY_RESULT_SERIALIZER = 'json'
+
 CELERY_IMPORTS = [
     'records.tasks',
 ]
 
-#Remove this bit once timezone issues are resolved.
+# Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+# Timezones.
+# Remove this bit once timezone issues are resolved.
+
 import warnings
 warnings.filterwarnings(
     'error', r"DateTimeField .* received a naive datetime",

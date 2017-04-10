@@ -75,25 +75,27 @@ class Command(BaseCommand):
 				break
 
 #Spits out something like this:
-#Detector        Output queue    Input queue     Last parsed message
-#Flood           0               0               11:45:38
-#Spam            0               0               00:00:00
-#LinkSpam        0               0               00:00:00
+#Detector        Output queue    Input queue     Last parsed message             Cache size
+#Flood           0               0               00:00:00                        0
+#LinkSpam        0               0               00:00:00                        0
 	def status(self):
-		response = "{0:<16}{1:<16}{2:<16}{3}\n{4:<16}{5:<16}{6:<16}{7:%H:%M:%S}\n{8:<16}{9:<16}{10:<16}{11:%H:%M:%S}"
+		response = "{:<16}{:<16}{:<16}{:<32}{:<16}\n{:<16}{:<16}{:<16}{:<32}{:<16}\n{:<16}{:<16}{:<16}{:<32}{:<16}"
 		values = [
 			"Detector",
 			"Output queue",
 			"Input queue",
 			"Last parsed message",
+			"Cache size",
 			"Flood",
 			self.FloodDetector.output_queue.qsize(),
 			self.FloodDetector.input_queue.qsize(),
-			self.FloodDetector.last_message,
+			"{:%H:%M:%S}".format(self.FloodDetector.last_message),
+			len(self.FloodDetector.patterns),
 			"LinkSpam",
 			self.LinkBasedSpamDetector.output_queue.qsize(),
 			self.LinkBasedSpamDetector.input_queue.qsize(),
-			self.LinkBasedSpamDetector.last_message,
+			"{:%H:%M:%S}".format(self.LinkBasedSpamDetector.last_message),
+			len(self.LinkBasedSpamDetector.tracked_users),
 		]
 		print response.format(*values)
 		print "Users in report queue: "+str(self.MechanizedTwitchC.report_queue.qsize())
