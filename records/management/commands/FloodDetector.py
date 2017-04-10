@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+import pytz
 import uuid
 import Queue
 import threading
@@ -76,9 +77,9 @@ class FloodDetectorMain():
 					json_data = json.loads(json_raw)
 					if(type(json_data) != type(0)):
 						try:
-							self.users[username].creation_date = datetime.strptime(json_data["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+							self.users[username].creation_date = datetime.strptime(json_data["created_at"]+" UTC", "%Y-%m-%dT%H:%M:%SZ %Z")
 						except ValueError:
-							self.users[username].creation_date = datetime.strptime(json_data["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+							self.users[username].creation_date = datetime.strptime(json_data["created_at"]+" UTC", "%Y-%m-%dT%H:%M:%SZ %Z")
 						except AttributeError:
 							self.parent.TwitchAPIHandlerC.add_request(username, self.add_creation_date_from_api)
 					else:
@@ -179,7 +180,7 @@ class FloodDetectorMain():
 		self.confirmed_floods = {}
 		self.input_queue = input_queue
 		self.output_queue = Queue.Queue()
-		self.last_message = datetime(1990, 1, 1)
+		self.last_message = datetime(1990, 1, 1, 0, 0, 0, 0, pytz.utc)
 
 		if(apihandler == None):
 			from TwitchAPIHandler import TwitchAPIHandler
@@ -232,7 +233,7 @@ class FloodDetectorMain():
 	standard_emotes_regex = re.compile(r"\b(DAESuppy|JKanStyle|OptimizePrime|StoneLightning|TheRinger|B-?\)|\:-?[z|Z|\|]|\:-?\)|\:-?\(|\:-?(p|P)|\;-?(p|P)|\&lt\;3|\;-?\)|R-?\)|\:-?D|\:-?(o|O)|\&gt\;\(|EagleEye|RedCoat|JonCarnage|MrDestructoid|BCWarrior|DansGame|SwiftRage|PJSalt|KevinTurtle|Kreygasm|SSSsss|PunchTrees|ArsonNoSexy|SMOrc|Kappa|GingerPower|FrankerZ|OneHand|HassanChop|BloodTrail|DBstyle|AsianGlow|BibleThump|ShazBotstix|PogChamp|PMSTwin|FUNgineer|ResidentSleeper|4Head|HotPokket|FailFish|ThunBeast|BigBrother|TF2John|RalpherZ|SoBayed|Kippa|Keepo|WholeWheat|PeoplesChamp|GrammarKing|PanicVis|BrokeBack|PipeHype|Mau5|YouWHY|RitzMitz|EleGiggle|MingLee|ArgieB8|TheThing|KappaPride|ShadyLulu|CoolCat|TheTarFu|riPepperonis|BabyRage|duDudu|panicBasket|bleedPurple|twitchRaid|PermaSmug|BuddhaBar|RuleFive|WutFace|PRChase|ANELE|DendiFace|FunRun|HeyGuys|BCouch|PraiseIt|mcaT|TTours|cmonBruh|PrimeMe|NotATK|PeteZaroll|PeteZarollTie|HumbleLife|CorgiDerp|SmoocherZ|\:-?[\\/]|SeemsGood|FutureMan|CurseLit|NotLikeThis|[oO](_|\.)[oO]|VoteYea|MikeHogu|VoteNay|KappaRoss|GOWSkull|VoHiYo|KappaClaus|AMPEnergy|OSkomodo|OSsloth|OSfrog|TinyFace|OhMyDog|KappaWealth|AMPEnergyCherry|DogFace|HassaanChop|Jebaited|AMPTropPunch|TooSpicy|WTRuck|NomNom|StinkyCheese|ChefFrank|UncleNox|YouDontSay|UWot|RlyTho|TBTacoLeft|TBCheesePull|TBTacoRight|BudBlast|BudStar|RaccAttack|PJSugar|DoritosChip|StrawBeary|OpieOP|DatSheffy|DxCat|DxAbomb|BlargNaut|PicoMause|copyThis|pastaThat|imGlitch|GivePLZ|UnSane|TakeNRG|BrainSlug|BatChest|FreakinStinkin|SuperVinlin|ItsBoshyTime|Poooound|NinjaGrumpy|TriHard|KAPOW|SoonerLater|PartyTime|CoolStoryBob|NerfRedBlaster|NerfBlueBlaster|TheIlluminati|TBAngel|TwitchRPG|MVGame)\b") #Fetched from http://api.twitch.tv/kraken/chat/emoticons?on_site=1 (emoticon_set=null)
 	link_regex = re.compile(ur"(https?:\/\/)?([-a-zA-Z0-9@:%_\\+~#=\u24b6-\u24e9]+\.)+([a-z\u24b6-\u24e9]{2,6})([-a-zA-Z0-9@:%_\\+.~#?&//=\u24b6-\u24e9]*)")
 	alphanumerical_regex = re.compile(ur"\w+(\d[A-Za-z]|[A-Za-z]\d)\w+")
-	digit_regex = re.compile(ur"\d")
+	digit_regex = re.compile(ur"\d+")
 	alpha_char_regex = re.compile(ur"[A-Za-z]")
 	special_char_regex = re.compile(ur"""[\]\[!"#\$%&'()\*\+,\./:;<=>\?\\\^_`\{\|\}~-]""")
 	asian_character_ranges = [

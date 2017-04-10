@@ -3,6 +3,7 @@ import logging
 
 import websocket
 from datetime import datetime
+import pytz
 import json
 import time
 import Queue
@@ -32,7 +33,7 @@ class ChatFeed():
 		self.current_batch = MessageBatch()
 		self.batch_input_lock = threading.RLock()
 
-		self.latest_message = datetime(1990, 01, 01)
+		self.latest_message = datetime(1990, 1, 1, 0, 0, 0, 0, pytz.utc)
 
 	def add_feed(self, url):
 		ws = websocket.WebSocketApp(url, on_message=self.on_message, on_error=self.on_error, on_close=self.on_close)
@@ -80,7 +81,7 @@ class ChatFeed():
 			#Pads all the lists within the tags_data list to len=2, as the tags will sometimes contain no "=" separator.
 			tags_data = map(lambda a: (a + [''] * 2)[:2], tags_data)
 			tags = dict(tags_data)
-			message = Message(datetime.fromtimestamp(float(ws_message["ts"])), ws_message["data"]["room"], ws_message["data"]["nick"], ws_message["data"]["body"], tags)
+			message = Message(datetime.fromtimestamp(float(ws_message["ts"]), pytz.utc), ws_message["data"]["room"], ws_message["data"]["nick"], ws_message["data"]["body"], tags)
 			if(self.message_validity(message)):
 				with self.batch_input_lock:
 					self.current_batch.messages.append(message)

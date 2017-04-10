@@ -3,6 +3,7 @@
 from random_useful_functions import start_daemon_thread
 
 from datetime import datetime, timedelta
+import pytz
 import re
 import urllib2
 from urllib import quote, urlencode
@@ -42,9 +43,9 @@ class LinkBasedSpamDetector():
 			else:
 				response = json.loads(response)
 				try:
-					self.creation_date = datetime.strptime(response["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+					self.creation_date = datetime.strptime(response["created_at"]+" UTC", "%Y-%m-%dT%H:%M:%SZ %Z")
 				except ValueError:
-					self.creation_date = datetime.strptime(response["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+					self.creation_date = datetime.strptime(response["created_at"]+" UTC", "%Y-%m-%dT%H:%M:%SZ %Z")
 				#Determines if the account is older than 7 days.
 				self.too_old = not(datetime.now() - self.creation_date <= seven_days)
 				#Determines if the account is Admin/Staff/Global Mod.
@@ -121,7 +122,7 @@ class LinkBasedSpamDetector():
 		#self.caught_usernames = []
 
 		self.output_queue = Queue.Queue()
-		self.last_message = datetime(1990, 1, 1)
+		self.last_message = datetime(1990, 1, 1, 0, 0, 0, 0, pytz.utc)
 
 		if(apihandler == None):
 			from TwitchAPIHandler import TwitchAPIHandler
