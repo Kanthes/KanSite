@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
+import ConfigParser
 config = ConfigParser.RawConfigParser()
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 config.readfp(open(os.path.join(__location__, 'settings.cfg')))
