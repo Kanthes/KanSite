@@ -7,17 +7,20 @@ https://docs.djangoproject.com/en/1.7/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
+config = ConfigParser.RawConfigParser()
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+config.readfp(open(os.path.join(__location__, 'settings.cfg')))
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '4#7bte3%i&dcqxn!e)aj%^v@rcw6bv#3l$(1yv37y-7(p6#82h'
+SECRET_KEY = config.get('django', 'secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -61,8 +64,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'KanCompDetector',
-        'USER': 'root',
-        'PASSWORD': 'admin hellz yea mysql',
+        'USER': config.get('mysql', 'username'),
+        'PASSWORD': config.get('mysql', 'password'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {'charset': 'utf8mb4'},
@@ -119,6 +122,7 @@ CELERY_IMPORTS = [
     'records.tasks',
 ]
 
+#Remove this bit once timezone issues are resolved.
 import warnings
 warnings.filterwarnings(
     'error', r"DateTimeField .* received a naive datetime",
