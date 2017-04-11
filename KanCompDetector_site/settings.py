@@ -136,12 +136,3 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
-
-# Timezones.
-# Remove this bit once timezone issues are resolved.
-
-import warnings
-warnings.filterwarnings(
-    'error', r"DateTimeField .* received a naive datetime",
-    RuntimeWarning, r'django\.db\.models\.fields',
-)

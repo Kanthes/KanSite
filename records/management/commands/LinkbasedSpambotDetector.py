@@ -17,6 +17,7 @@ import redis
 import threading
 
 import records.models as models
+from django.utils.timezone import make_aware
 
 seven_days = timedelta(days=7)
 default_creation_date = datetime(1990, 1, 1, 0, 0, 0)
@@ -67,7 +68,7 @@ class LinkBasedSpamDetector():
 					return True
 
 		def record(self):
-			user_object = models.User.objects.get_or_create(username=self.username, creation_date=self.creation_date)[0]
+			user_object = models.User.objects.get_or_create(username=self.username, creation_date=make_aware(self.creation_date))[0]
 			user_object.save()
 			spambot_object = models.Spambot(timestamp=self.messages[0].timestamp, pattern=self.pattern.model_object, user=user_object)
 			spambot_object.save()
