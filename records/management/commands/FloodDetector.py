@@ -189,11 +189,6 @@ class FloodDetectorMain():
 		else:
 			self.TwitchAPIHandlerC = apihandler
 
-		if(reporthandler == None):
-			self.MechanizedTwitchC = False
-		else:
-			self.MechanizedTwitchC = reporthandler
-
 	def parse_input_queue(self):
 		while(True):
 			batch = self.input_queue.get()
