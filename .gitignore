@@ -1,8 +1,6 @@
-settings.cfg
+settings.py
 *.pyc
 KanSite/**
 static/**
-*phantomjs
-ghostdriver.log
 celerybeat-schedule
 celerybeat.pid

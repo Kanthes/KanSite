@@ -109,7 +109,7 @@ class LinkBasedSpamDetector():
 							return True
 			return False
 
-	def __init__(self, parent, input_queue, apihandler=None, reporthandler=None):
+	def __init__(self, parent, input_queue, apihandler=None):
 		self.parent = parent
 		self.input_queue = input_queue
 		self.link_pattern = re.compile(ur"(https?:\/\/)?([-a-zA-Z0-9@:%_\\+~#=\u24b6-\u24e9]+\.)+([a-z\u24b6-\u24e9]{2,6})([-a-zA-Z0-9@:%_\\+.~#?&//=\u24b6-\u24e9]*)") #Linkify pattern used by Twitch.
@@ -130,11 +130,6 @@ class LinkBasedSpamDetector():
 			self.TwitchAPIHandlerC = TwitchAPIHandler(20)
 		else:
 			self.TwitchAPIHandlerC = apihandler
-
-		if(reporthandler == None):
-			self.MechanizedTwitchC = False
-		else:
-			self.MechanizedTwitchC = reporthandler
 
 		#Obtained via https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=0
 		emote_string = "\b(DAESuppy|JKanStyle|OptimizePrime|StoneLightning|TheRinger|B-?\)|\:-?[z|Z|\|]|\:-?\)|\:-?\(|\:-?(p|P)|\;-?(p|P)|\&lt\;3|\;-?\)|R-?\)|\:-?D|\:-?(o|O)|\&gt\;\(|EagleEye|RedCoat|JonCarnage|MrDestructoid|BCWarrior|DansGame|SwiftRage|PJSalt|KevinTurtle|Kreygasm|SSSsss|PunchTrees|ArsonNoSexy|SMOrc|Kappa|GingerPower|FrankerZ|OneHand|HassanChop|BloodTrail|DBstyle|AsianGlow|BibleThump|ShazBotstix|PogChamp|PMSTwin|FUNgineer|ResidentSleeper|4Head|HotPokket|FailFish|ThunBeast|BigBrother|TF2John|RalpherZ|SoBayed|Kippa|Keepo|WholeWheat|PeoplesChamp|GrammarKing|PanicVis|BrokeBack|PipeHype|Mau5|YouWHY|RitzMitz|EleGiggle|MingLee|ArgieB8|TheThing|KappaPride|ShadyLulu|CoolCat|TheTarFu|riPepperonis|BabyRage|duDudu|panicBasket|bleedPurple|twitchRaid|PermaSmug|BuddhaBar|RuleFive|WutFace|PRChase|ANELE|DendiFace|FunRun|HeyGuys|BCouch|PraiseIt|mcaT|TTours|cmonBruh|PrimeMe|NotATK|PeteZaroll|PeteZarollTie|HumbleLife|CorgiDerp|SmoocherZ|\:-?[\\/]|SeemsGood|FutureMan|CurseLit|NotLikeThis|[oO](_|\.)[oO]|VoteYea|MikeHogu|VoteNay|KappaRoss|GOWSkull|VoHiYo|KappaClaus|AMPEnergy|OSkomodo|OSsloth|OSfrog|TinyFace|OhMyDog|KappaWealth|AMPEnergyCherry|DogFace|HassaanChop|Jebaited|AMPTropPunch|TooSpicy|WTRuck|NomNom|StinkyCheese|ChefFrank|UncleNox|YouDontSay|UWot|RlyTho|TBTacoLeft|TBCheesePull|TBTacoRight|BudBlast|BudStar|RaccAttack|PJSugar|DoritosChip|StrawBeary|OpieOP|DatSheffy|DxCat|DxAbomb|BlargNaut|PicoMause|copyThis|pastaThat|imGlitch|GivePLZ|UnSane|TakeNRG|BrainSlug|BatChest|FreakinStinkin|SuperVinlin|ItsBoshyTime|Poooound|NinjaGrumpy|TriHard|KAPOW|SoonerLater|PartyTime|CoolStoryBob|NerfRedBlaster|NerfBlueBlaster|TheIlluminati|TBAngel|TwitchRPG|MVGame)\b"
@@ -282,18 +277,4 @@ class LinkBasedSpamDetector():
 		username = tracked_user_object.username
 		self.recently_caught_usernames.insert(0, username)
 		self.recently_caught_usernames = self.recently_caught_usernames[0:100]
-		if(self.MechanizedTwitchC):
-			description = "Content: chat\nDetailed Reason: spam_bots\nIP Block: true\nSuspension: indefinite\n----------------------------------------\n\nspam bot\n\n"
-			description += "Messages:\n"
-			for message in tracked_user_object.messages:
-				description += "{0:%Y-%m-%d %H:%M:%S} {1} {2}\n".format(message.timestamp, message.room, message.message.encode("utf-8"))
-			description += "Report link:\nhttp://www.twitch.tv/{0}/report_form?tos_ban=true".format(username)
-			report_list = [
-								{
-									"username":username,
-									"category":"spam",
-									"description":description,
-								}
-							]
-			self.MechanizedTwitchC.report_multiple_users(report_list)
 		del self.tracked_users[username]

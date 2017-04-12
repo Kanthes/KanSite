@@ -174,7 +174,7 @@ class FloodDetectorMain():
 		def add_message(self, current_message):
 			self.messages.append(current_message)
 
-	def __init__(self, parent, input_queue, apihandler=None, reporthandler=None):
+	def __init__(self, parent, input_queue, apihandler=None):
 		self.parent = parent
 
 		self.patterns = {}
@@ -287,48 +287,3 @@ class FloodDetectorMain():
 			else:
 				key += piece
 		return key
-
-	def review_output(self):
-		while(True):
-			if(self.output_queue.empty()):
-				print "Flood bot output queue is empty."
-				break
-			pattern_uuid = self.output_queue.get()
-			pattern = self.confirmed_floods.get(pattern_uuid)
-			if(pattern):
-				self.review_output_pattern(pattern)
-
-	def review_output_pattern(self, flood_pattern):
-		print "Number of messages: {0}".format(len(flood_pattern.messages))
-		print "Number of users: {0}".format(len(flood_pattern.users))
-		print "Room: {0}".format(flood_pattern.room)
-		print "Message: \"{0}\"".format(flood_pattern.example_message.encode('UTF-8', 'replace'))
-		print "Number of groups: {0}".format(len(flood_pattern.groups_of_creation_dates))
-		for i in flood_pattern.groups_of_creation_dates:
-			print "{0:%Y-%m-%d %H:%M:%S} to {1:%Y-%m-%d %H:%M:%S} - {2} user(s)".format(i[0], i[-1], len(i))
-		print "\n"
-		while(True):
-			print "1. Ban users in the suspected flood. [Default]"
-			print "2. Disregard flood. [Other]"
-			input_message = raw_input()
-			if(input_message == "1" or input_message == ""):
-				self.report_all_users_in_pattern(flood_pattern)
-				break
-			else:
-				break
-		self.confirmed_floods.pop(int(flood_pattern.uuid))
-
-	def report_all_users_in_pattern(self, flood_pattern):
-		report_list = []
-		if(self.MechanizedTwitchC):
-			for username in flood_pattern.users:
-				description = "Content: chat\nDetailed Reason: flood_bots\nIP Block: true\nSuspension: indefinite\nCleared Images: false\n----------------------------------------\n\n"
-				description += "flood bot in {0}\nMessages from this user:\n".format(flood_pattern.room)
-				for message in flood_pattern.users[username].messages:
-					description += "{0}\n".format(message.message.encode('UTF-8'))
-				description += "\nAll messages in this flood:\n"
-				for message in flood_pattern.messages:
-					description += "{0}\n".format(message.message.encode('UTF-8'))
-				description += "\nFlood bot occured between {0:%Y-%m-%d %H:%M:%S} and {1:%Y-%m-%d %H:%M:%S}, contained {2} user(s) and {3} message(s).".format(flood_pattern.first_message, flood_pattern.last_message, len(flood_pattern.users), len(flood_pattern.messages))
-				report_list.append({"username":username, "category":"spam", "description":description})
-			self.MechanizedTwitchC.report_multiple_users(report_list)

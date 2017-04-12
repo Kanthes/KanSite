@@ -1,12 +1,45 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
 from django.views import generic
+from django.conf import settings
 
 from records.models import Flood, User, Message, Report, SpamPattern, Spambot
 
 from datetime import datetime, timedelta, date
 import pytz
+import urllib
+import urllib2
+import json
+
+def authorize(request):
+	#Here's where I check the user type, and if it fails (but they do have an access token), I forward them to an Access Denied-like page.
+	if(not request.session.get("access_token", False)):
+		parameters = {
+			"client_id":settings.CLIENT_ID,
+			"redirect_uri":"http://localhost",
+			"scope":'+'.join(["user_read"]),
+		}
+		return HttpResponseRedirect(url="https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}".format(parameters))
+		#Final redirect should look something like http://localhost/?code=orpnlthisisfakevmntl4q8wlgbqub&scope=user_read
+
+def access(request):
+	if(request.GET.get("code", False)):
+		values = {
+			"client_id":settings.CLIENT_ID,
+			"client_secret":settings.CLIENT_SECRET, #Don't commit with this info in public.
+			"grant_type":"authorization_code",
+			"redirect_uri":"http://localhost",
+			"scope":"user_read",
+			"code":request.GET["code"],
+		}
+		data = urllib.urlencode(values)
+		response = urllib2.urlopen(urllib2.Request("https://api.twitch.tv/kraken/oauth2/token", data)).read()
+		response = json.loads(response)
+		request.session["access_token"] = response["access_token"]
+		#Response should look something like this: {"access_token":"ulln5dthisisfake47rr4zljn4b78u","refresh_token":"nykye9cqr2nthisisfaker78edme94nm3h6xiybjifzn7wfbju","scope":["user_read"]}
+
+		#This is where I forward them back to the original page they wanted via "state", which then calls the authorize function all over again.
 
 # Create your views here.
 def index(request):
