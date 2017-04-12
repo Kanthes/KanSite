@@ -13,8 +13,19 @@ import urllib2
 import json
 
 def authorize(request):
-	#Here's where I check the user type, and if it fails (but they do have an access token), I forward them to an Access Denied-like page.
-	if(not request.session.get("access_token", False)):
+	#Check if an access token exists in their Session. If it does, check the user type to see if they're Admin/Staff before proceeding. If they don't have an access token, forward them to the Authorization Page.
+	if(request.session.get("access_token", False)):
+		headers = {
+			'Client-ID':settings.CLIENT_ID,
+			'Accept':'application/vnd.twitchtv.v5+json',
+			'Authorization':'OAuth {}'.format(request.session["access_token"]),
+		}
+		response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
+		if(response.get("type", "") == "admin"):
+			return True #Go ahead with the original request. Gotta figure out descriptors for this one.
+		else:
+			return HttpResponse("Your Twitch account does not have access to this page.")
+	else:
 		parameters = {
 			"client_id":settings.CLIENT_ID,
 			"redirect_uri":"http://localhost",
@@ -24,6 +35,7 @@ def authorize(request):
 		#Final redirect should look something like http://localhost/?code=orpnlthisisfakevmntl4q8wlgbqub&scope=user_read
 
 def access(request):
+	#This is the view the user is forwarded to after authorizing the app via Twitch. It makes an API call with the provided code to get an access token, and saves it in their Session.
 	if(request.GET.get("code", False)):
 		values = {
 			"client_id":settings.CLIENT_ID,
@@ -40,6 +52,8 @@ def access(request):
 		#Response should look something like this: {"access_token":"ulln5dthisisfake47rr4zljn4b78u","refresh_token":"nykye9cqr2nthisisfaker78edme94nm3h6xiybjifzn7wfbju","scope":["user_read"]}
 
 		#This is where I forward them back to the original page they wanted via "state", which then calls the authorize function all over again.
+	else:
+		return HttpResponseRedirect("/records/")
 
 # Create your views here.
 def index(request):
