@@ -23,7 +23,7 @@ def authorize(func):
 				'Authorization':'OAuth {}'.format(request.session["access_token"]),
 			}
 			response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
-			if(response.get("type", "") not in ["admin", "staff"]):
+			if(response.get("type", "") in ["admin", "staff"]):
 				#All is well.
 				return func(request, *args, **kwargs)
 			else:
@@ -61,7 +61,6 @@ def access(request):
 		return HttpResponseRedirect("/records/")
 
 # Create your views here.
-@authorize
 def index(request):
 	#latest_flood_list = Flood.objects.annotate(num_users=Count('users')).filter(num_users__gte=10).order_by('-timestamp')[:5] #5 latest floods with 10 or more users involved.
 	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now(pytz.utc)-timedelta(days=3)).order_by('-timestamp')
