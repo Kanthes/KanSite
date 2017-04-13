@@ -13,6 +13,6 @@ urlpatterns = [
 	url(r'^spamreport/?$', views.authorize(views.current_year_spam_reports), name='currentyearspamreports'),
 	url(r'^spamreport/(?P<start_year>\d{4})(?P<start_month>\d{2})(?P<start_day>\d{2})/(?P<end_year>\d{4})(?P<end_month>\d{2})(?P<end_day>\d{2})/?$', views.authorize(views.spamreport), name='spamreport'),
 	url(r'^uniqueusernames/?$', views.authorize(views.uniqueusernames), name='uniqueusernames'),
-	url(r'^spambot_log\.log$', views.authorize(views.spambot_log), name='spambot_log'),
-	url(r'^access/?$', views.authorize(views.access), name='access'),
+	url(r'^spambot_log\.log$', views.authorize(views.spambot_log), name='spambot_log'), #Log accessed by 3v's Admin sheet.
+	url(r'^access/?$', views.authorize(views.access), name='access'), #Authorization redirect URL
 ]
