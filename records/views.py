@@ -16,19 +16,22 @@ import base64
 def authorize(func):
 	def inner(request, *args, **kwargs):
 		#Check if an access token exists in their Session. If it does, check the user type to see if they're Admin/Staff before proceeding. If they don't have an access token, forward them to the Authorization Page.
-		if(request.session.get("access_token", False)):
+		if(request.session.get("access_token", False) != False):
 			headers = {
 				'Client-ID':settings.CLIENT_ID,
 				'Accept':'application/vnd.twitchtv.v5+json',
 				'Authorization':'OAuth {}'.format(request.session["access_token"]),
 			}
-			response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
-			if(response.get("type", "") in ["admin", "staff"]):
-				#All is well.
-				return func(request, *args, **kwargs)
-			else:
-				return HttpResponse("Your Twitch account does not have access to this page.")
-		else:
+			try:
+				response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
+				if(response.get("type", "") in ["admin", "staff"]):
+					#All is well.
+					return func(request, *args, **kwargs)
+				else:
+					return HttpResponse("Your Twitch account does not have access to this page.")
+			except urllib2.HTTPError:
+				request.session["access_token"] = False
+		if(request.session.get("access_token", False) == False):
 			parameters = {
 				"client_id":settings.CLIENT_ID,
 				"redirect_uri":"http://193.111.136.150/records/access/",
