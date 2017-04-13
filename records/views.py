@@ -11,51 +11,57 @@ import pytz
 import urllib
 import urllib2
 import json
+import base64
 
-def authorize(request):
-	#Check if an access token exists in their Session. If it does, check the user type to see if they're Admin/Staff before proceeding. If they don't have an access token, forward them to the Authorization Page.
-	if(request.session.get("access_token", False)):
-		headers = {
-			'Client-ID':settings.CLIENT_ID,
-			'Accept':'application/vnd.twitchtv.v5+json',
-			'Authorization':'OAuth {}'.format(request.session["access_token"]),
-		}
-		response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
-		if(response.get("type", "") == "admin"):
-			return True #Go ahead with the original request. Gotta figure out descriptors for this one.
+def authorize(func):
+	def inner(request, *args, **kwargs):
+		#Check if an access token exists in their Session. If it does, check the user type to see if they're Admin/Staff before proceeding. If they don't have an access token, forward them to the Authorization Page.
+		if(request.session.get("access_token", False)):
+			headers = {
+				'Client-ID':settings.CLIENT_ID,
+				'Accept':'application/vnd.twitchtv.v5+json',
+				'Authorization':'OAuth {}'.format(request.session["access_token"]),
+			}
+			response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
+			if(response.get("type", "") not in ["admin", "staff"]):
+				#All is well.
+				return func(request, *args, **kwargs)
+			else:
+				return HttpResponse("Your Twitch account does not have access to this page.")
 		else:
-			return HttpResponse("Your Twitch account does not have access to this page.")
-	else:
-		parameters = {
-			"client_id":settings.CLIENT_ID,
-			"redirect_uri":"http://localhost",
-			"scope":'+'.join(["user_read"]),
-		}
-		return HttpResponseRedirect(url="https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}".format(parameters))
-		#Final redirect should look something like http://localhost/?code=orpnlthisisfakevmntl4q8wlgbqub&scope=user_read
+			parameters = {
+				"client_id":settings.CLIENT_ID,
+				"redirect_uri":"http://193.111.136.150/records/access/",
+				"scope":'+'.join(["user_read"]),
+				"state":base64.b64encode(request.build_absolute_uri())
+			}
+			url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&state={state}".format(**parameters)
+			return HttpResponseRedirect(url)
+			#Final redirect should look something like http://localhost/?code=orpnlthisisfakevmntl4q8wlgbqub&scope=user_read
+	return inner
 
 def access(request):
 	#This is the view the user is forwarded to after authorizing the app via Twitch. It makes an API call with the provided code to get an access token, and saves it in their Session.
 	if(request.GET.get("code", False)):
-		values = {
+		post_values = {
 			"client_id":settings.CLIENT_ID,
 			"client_secret":settings.CLIENT_SECRET, #Don't commit with this info in public.
 			"grant_type":"authorization_code",
-			"redirect_uri":"http://localhost",
+			"redirect_uri":"http://193.111.136.150/records/access/",
 			"scope":"user_read",
 			"code":request.GET["code"],
 		}
-		data = urllib.urlencode(values)
-		response = urllib2.urlopen(urllib2.Request("https://api.twitch.tv/kraken/oauth2/token", data)).read()
-		response = json.loads(response)
+		response = json.loads(urllib2.urlopen(urllib2.Request("https://api.twitch.tv/kraken/oauth2/token", urllib.urlencode(post_values))).read())
 		request.session["access_token"] = response["access_token"]
 		#Response should look something like this: {"access_token":"ulln5dthisisfake47rr4zljn4b78u","refresh_token":"nykye9cqr2nthisisfaker78edme94nm3h6xiybjifzn7wfbju","scope":["user_read"]}
 
 		#This is where I forward them back to the original page they wanted via "state", which then calls the authorize function all over again.
+		return HttpResponseRedirect(base64.b64decode(request.GET["state"]))
 	else:
 		return HttpResponseRedirect("/records/")
 
 # Create your views here.
+@authorize
 def index(request):
 	#latest_flood_list = Flood.objects.annotate(num_users=Count('users')).filter(num_users__gte=10).order_by('-timestamp')[:5] #5 latest floods with 10 or more users involved.
 	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now(pytz.utc)-timedelta(days=3)).order_by('-timestamp')
