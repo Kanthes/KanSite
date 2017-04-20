@@ -24,7 +24,7 @@ def authorize(func):
 			}
 			try:
 				response = json.loads(urllib2.urlopen(urllib2.Request(url="https://api.twitch.tv/kraken/user", headers=headers)).read())
-				if(response.get("type", "") in ["admin", "staff"]):
+				if(response.get("type", "") in ["global_mod", "admin", "staff"]):
 					#All is well.
 					return func(request, *args, **kwargs)
 				else:
