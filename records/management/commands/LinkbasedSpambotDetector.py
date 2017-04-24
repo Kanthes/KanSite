@@ -76,40 +76,6 @@ class LinkBasedSpamDetector():
 			for message in self.messages:
 				spambot_object.messages.create(username=user_object, timestamp=message.timestamp, room=message.room, body=message.message.encode('utf-8'))
 
-	class SpamPattern():
-		def __init__(self, name="", initial_text_pattern=None, alt_text_pattern=None, link_patterns={}, young_limit=5, old_limit=10, model_object=None):
-			self.name = name
-			self.initial_text_pattern = initial_text_pattern
-			self.alt_text_pattern = alt_text_pattern
-			self.link_patterns = link_patterns
-			self.young_limit = young_limit
-			self.old_limit = old_limit
-			self.model_object = model_object
-
-		#Required links to have been analysed
-		def match_message(self, current_message, check_alt=False):
-			if(self.initial_text_pattern):
-				if(re.match(self.initial_text_pattern, current_message.message)):
-					return True
-			if(check_alt and self.alt_text_pattern):
-				if(re.match(self.alt_text_pattern, current_message.message)):
-					return True
-			for link in current_message.links:
-				#Sometimes the link directory will end up being completely empty if it's a invalid link. In this case, we simply skip analyzing the link.
-				if(current_message.links[link] == {}):
-					continue
-				for key in self.link_patterns:
-					#'key' in this case is the keys in 3ventics link analysis, meaning it's used to find the correct pattern to use and the right string to match it to.
-					pattern = self.link_patterns[key]
-					try:
-						target = current_message.links[link][key]
-					except KeyError:
-						continue
-					else:
-						if(re.match(pattern, target)):
-							return True
-			return False
-
 	def __init__(self, parent, input_queue, apihandler=None):
 		self.parent = parent
 		self.input_queue = input_queue
@@ -119,9 +85,7 @@ class LinkBasedSpamDetector():
 		self.redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 		self.tracked_users = {}
-		#self.users = {}
 		self.recently_caught_usernames = []
-		#self.caught_usernames = []
 
 		self.output_queue = Queue.Queue()
 		self.last_message = datetime(1990, 1, 1, 0, 0, 0, 0, pytz.utc)
@@ -132,44 +96,9 @@ class LinkBasedSpamDetector():
 		else:
 			self.TwitchAPIHandlerC = apihandler
 
-		#Obtained via https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=0
-		emote_string = "\b(DAESuppy|JKanStyle|OptimizePrime|StoneLightning|TheRinger|B-?\)|\:-?[z|Z|\|]|\:-?\)|\:-?\(|\:-?(p|P)|\;-?(p|P)|\&lt\;3|\;-?\)|R-?\)|\:-?D|\:-?(o|O)|\&gt\;\(|EagleEye|RedCoat|JonCarnage|MrDestructoid|BCWarrior|DansGame|SwiftRage|PJSalt|KevinTurtle|Kreygasm|SSSsss|PunchTrees|ArsonNoSexy|SMOrc|Kappa|GingerPower|FrankerZ|OneHand|HassanChop|BloodTrail|DBstyle|AsianGlow|BibleThump|ShazBotstix|PogChamp|PMSTwin|FUNgineer|ResidentSleeper|4Head|HotPokket|FailFish|ThunBeast|BigBrother|TF2John|RalpherZ|SoBayed|Kippa|Keepo|WholeWheat|PeoplesChamp|GrammarKing|PanicVis|BrokeBack|PipeHype|Mau5|YouWHY|RitzMitz|EleGiggle|MingLee|ArgieB8|TheThing|KappaPride|ShadyLulu|CoolCat|TheTarFu|riPepperonis|BabyRage|duDudu|panicBasket|bleedPurple|twitchRaid|PermaSmug|BuddhaBar|RuleFive|WutFace|PRChase|ANELE|DendiFace|FunRun|HeyGuys|BCouch|PraiseIt|mcaT|TTours|cmonBruh|PrimeMe|NotATK|PeteZaroll|PeteZarollTie|HumbleLife|CorgiDerp|SmoocherZ|\:-?[\\/]|SeemsGood|FutureMan|CurseLit|NotLikeThis|[oO](_|\.)[oO]|VoteYea|MikeHogu|VoteNay|KappaRoss|GOWSkull|VoHiYo|KappaClaus|AMPEnergy|OSkomodo|OSsloth|OSfrog|TinyFace|OhMyDog|KappaWealth|AMPEnergyCherry|DogFace|HassaanChop|Jebaited|AMPTropPunch|TooSpicy|WTRuck|NomNom|StinkyCheese|ChefFrank|UncleNox|YouDontSay|UWot|RlyTho|TBTacoLeft|TBCheesePull|TBTacoRight|BudBlast|BudStar|RaccAttack|PJSugar|DoritosChip|StrawBeary|OpieOP|DatSheffy|DxCat|DxAbomb|BlargNaut|PicoMause|copyThis|pastaThat|imGlitch|GivePLZ|UnSane|TakeNRG|BrainSlug|BatChest|FreakinStinkin|SuperVinlin|ItsBoshyTime|Poooound|NinjaGrumpy|TriHard|KAPOW|SoonerLater|PartyTime|CoolStoryBob|NerfRedBlaster|NerfBlueBlaster|TheIlluminati|TBAngel|TwitchRPG|MVGame)\b"
-
-		for pattern_model in models.SpamPattern.objects.filter(enabled=True):
-			args = {
-				"name":pattern_model.name,
-				"initial_text_pattern":re.compile(re.sub("\{emote_string\}", emote_string, pattern_model.initial_text_pattern)) if pattern_model.initial_text_pattern != "" else None,
-				"alt_text_pattern":re.compile(re.sub("\{emote_string\}", emote_string, pattern_model.alt_text_pattern)) if pattern_model.alt_text_pattern != "" else None,
-				"link_patterns":json.loads(re.sub("'", '"', pattern_model.link_patterns)) if pattern_model.link_patterns != "" else {},
-				"young_limit":pattern_model.young_limit,
-				"old_limit":pattern_model.old_limit,
-				"model_object":pattern_model,
-			}
-			for key in args["link_patterns"].keys():
-				args["link_patterns"][key] = re.compile(args["link_patterns"][key])
-			spam_pattern = self.SpamPattern(**args)
-			self.spam_pattern_objects.append(spam_pattern)
-		logging.info("Imported {0} spam pattern(s) from database.".format(len(self.spam_pattern_objects)))
-
-#		spam_pattern = self.SpamPattern(link_patterns={"filename":re.compile("^.*\.scr$")}, young_limit=3)
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^.*\S+\.(stream|vodka)/(image|screenshot|img|screen|tif|sreenshot|shortcut|Iamge|Screean|imag)_?\d{1,10}.*$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^("+emote_string+" |l[ou]l )+(imgsfast\.org|imgspng\.com)/gallery/[\w\d]+(/img_[\w\d]+)?\.png( "+emote_string+"| lol| :D)*$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^(Suicide Attempt (https://)?(www\.)?twitch\.tv/[\w\d]+ ?)+$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^go over at - drakewing_com - and use ref: DOLOM - u get 1\$ free \d+$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^Use code: DOLOM - at drakewíng_com for 1\$ free!$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^Привет :\) https://2ch\.hk/b/arch/2017-01-17/src/144534706/14845100187730.webm$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-		#spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^((do you( really| rly)? (believe|think)|(haha|lol|omg|i (can't|could not) believe (it\.\.|that))( (this|the) (web)?(site|page))?|(this|the) (web)?(site|page)|why should) )?steam-?freebie\S+ (gives? away|glitches?|offers?)( absolutely| totally)?( free| gratis)?( Steam (keys|freebies|giftcards)| \d+ (USD|dollars)(( steam)? (giftcards|keys))?| keys| giftcards)?( for (free|steam))?\??\s*$"), young_limit=1, old_limit=1)
-#		self.spam_pattern_objects.append(spam_pattern)
-#		spam_pattern = self.SpamPattern(initial_text_pattern=re.compile("^Buy a simple and cheap, TwitchTV Chat Bomber at chatsurge<dot>net! \d+$"))
-#		self.spam_pattern_objects.append(spam_pattern)
-		
+		for spampattern_model in models.SpamPattern.objects.filter(enabled=True):
+			self.spam_pattern_objects.append(spampattern_model.getSpamPattern())
+		logging.info("Imported {0} spam pattern(s) from database.".format(len(self.spam_pattern_objects)))		
 
 	def parse_input_queue(self):
 		while(True):
@@ -262,7 +191,7 @@ class LinkBasedSpamDetector():
 				link_analysis_page = urllib2.urlopen("https://ohbot.3v.fi/query/urlquery?q={0}".format(quote(link.encode('utf-8'))), timeout=10)
 			except urllib2.HTTPError as e:
 				if(e.code not in [404, 500]):
-					logging.info("Status code: {0}\nReason: {1}\nLink: {2}".format(e.code, e.reason, link))
+					logging.info("Status code: {0}\nReason: {1}\nLink: {2}".format(e.code, e.reason.encode('utf-8'), link.encode('utf-8')))
 				return {}
 			except SSLError:
 				return {}

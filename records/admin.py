@@ -39,7 +39,7 @@ class SpamPatternModelForm(forms.ModelForm):
 	link_patterns = forms.CharField(widget=forms.Textarea)
 	class Meta:
 		model = SpamPattern
-		fields = ["name", "initial_text_pattern", "alt_text_pattern", "link_patterns", "young_limit", "old_limit"]
+		fields = ["name", "initial_text_pattern", "alt_text_pattern", "link_patterns", "young_limit", "old_limit", "enabled"]
 
 	def __init__(self, *args, **kwargs):
 		super(SpamPatternModelForm, self).__init__(*args, **kwargs)

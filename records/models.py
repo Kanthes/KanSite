@@ -1,5 +1,8 @@
 from django.db import models
 
+import re
+import json
+
 # Create your models here.
 class User(models.Model):
 	username = models.CharField(max_length=40)
@@ -55,6 +58,47 @@ class SpamPattern(models.Model):
 
 	def __str__(self):
 		return self.name
+
+	class SpamPattern():
+		def __init__(self, SpamPattern_object):
+			#Obtained via https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=0
+			emote_string = "\b(DAESuppy|JKanStyle|OptimizePrime|StoneLightning|TheRinger|B-?\)|\:-?[z|Z|\|]|\:-?\)|\:-?\(|\:-?(p|P)|\;-?(p|P)|\&lt\;3|\;-?\)|R-?\)|\:-?D|\:-?(o|O)|\&gt\;\(|EagleEye|RedCoat|JonCarnage|MrDestructoid|BCWarrior|DansGame|SwiftRage|PJSalt|KevinTurtle|Kreygasm|SSSsss|PunchTrees|ArsonNoSexy|SMOrc|Kappa|GingerPower|FrankerZ|OneHand|HassanChop|BloodTrail|DBstyle|AsianGlow|BibleThump|ShazBotstix|PogChamp|PMSTwin|FUNgineer|ResidentSleeper|4Head|HotPokket|FailFish|ThunBeast|BigBrother|TF2John|RalpherZ|SoBayed|Kippa|Keepo|WholeWheat|PeoplesChamp|GrammarKing|PanicVis|BrokeBack|PipeHype|Mau5|YouWHY|RitzMitz|EleGiggle|MingLee|ArgieB8|TheThing|KappaPride|ShadyLulu|CoolCat|TheTarFu|riPepperonis|BabyRage|duDudu|panicBasket|bleedPurple|twitchRaid|PermaSmug|BuddhaBar|RuleFive|WutFace|PRChase|ANELE|DendiFace|FunRun|HeyGuys|BCouch|PraiseIt|mcaT|TTours|cmonBruh|PrimeMe|NotATK|PeteZaroll|PeteZarollTie|HumbleLife|CorgiDerp|SmoocherZ|\:-?[\\/]|SeemsGood|FutureMan|CurseLit|NotLikeThis|[oO](_|\.)[oO]|VoteYea|MikeHogu|VoteNay|KappaRoss|GOWSkull|VoHiYo|KappaClaus|AMPEnergy|OSkomodo|OSsloth|OSfrog|TinyFace|OhMyDog|KappaWealth|AMPEnergyCherry|DogFace|HassaanChop|Jebaited|AMPTropPunch|TooSpicy|WTRuck|NomNom|StinkyCheese|ChefFrank|UncleNox|YouDontSay|UWot|RlyTho|TBTacoLeft|TBCheesePull|TBTacoRight|BudBlast|BudStar|RaccAttack|PJSugar|DoritosChip|StrawBeary|OpieOP|DatSheffy|DxCat|DxAbomb|BlargNaut|PicoMause|copyThis|pastaThat|imGlitch|GivePLZ|UnSane|TakeNRG|BrainSlug|BatChest|FreakinStinkin|SuperVinlin|ItsBoshyTime|Poooound|NinjaGrumpy|TriHard|KAPOW|SoonerLater|PartyTime|CoolStoryBob|NerfRedBlaster|NerfBlueBlaster|TheIlluminati|TBAngel|TwitchRPG|MVGame)\b"
+			self.name = SpamPattern_object.name
+			self.initial_text_pattern = re.compile(re.sub("\{emote_string\}", emote_string, SpamPattern_object.initial_text_pattern)) if SpamPattern_object.initial_text_pattern != "" else None
+			self.alt_text_pattern = json.loads(re.sub("'", '"', SpamPattern_object.link_patterns)) if SpamPattern_object.link_patterns != "" else {}
+			self.link_patterns = json.loads(re.sub("'", '"', SpamPattern_object.link_patterns)) if SpamPattern_object.link_patterns != "" else {}
+			for key in self.link_patterns.keys():
+				self.link_patterns[key] = re.compile(self.link_patterns[key])
+			self.young_limit = SpamPattern_object.young_limit
+			self.old_limit = SpamPattern_object.old_limit
+			self.model_object = SpamPattern_object
+
+		#Required links to have been analysed
+		def match_message(self, current_message, check_alt=False):
+			if(self.initial_text_pattern):
+				if(re.match(self.initial_text_pattern, current_message.message)):
+					return True
+			if(check_alt and self.alt_text_pattern):
+				if(re.match(self.alt_text_pattern, current_message.message)):
+					return True
+			for link in current_message.links:
+				#Sometimes the link directory will end up being completely empty if it's a invalid link. In this case, we simply skip analyzing the link.
+				if(current_message.links[link] == {}):
+					continue
+				for key in self.link_patterns:
+					#'key' in this case is the keys in 3ventics link analysis, meaning it's used to find the correct pattern to use and the right string to match it to.
+					pattern = self.link_patterns[key]
+					try:
+						target = current_message.links[link][key]
+					except KeyError:
+						continue
+					else:
+						if(re.match(pattern, target)):
+							return True
+			return False
+
+	def getSpamPattern(self):
+		return self.SpamPattern(self)
 
 class Spambot(models.Model):
 	timestamp = models.DateTimeField()
