@@ -1,0 +1,34 @@
+<html>
+	<head>
+		<title>Spampattern: {{ spampattern.name }}</title>
+	</head>
+	<body>
+		<h1>{{ spampattern.name }}</h1>
+
+		<table border='1'>
+			<tr><td><b>Enabled</b></td><td>{{ spampattern.enabled }}</td></tr>
+			<tr><td><b>Initial text pattern</b></td><td>{{ spampattern.initial_text_pattern }}</td></tr>
+			<tr><td><b>Alt_text pattern</b></td><td>{{ spampattern.alt_text_pattern }}</td></tr>
+			<tr><td><b>Link patterns</b></td><td>{{ spampattern.link_patterns }}</td></tr>
+			<tr><td><b>Young limit</b></td><td>{{ spampattern.young_limit }}</td></tr>
+			<tr><td><b>Old limit</b></td><td>{{ spampattern.old_limit }}</td></tr>
+		</table>
+
+		<table border='1'>
+			<tr>
+				<th>Spambot ID</th>
+				<th>Timestamp</th>
+				<th>Username</th>
+				<th>First message</th>
+			</tr>
+			{% for spambot in spampattern.spambot_set.all %}
+				<tr>
+					<td>{{ spambot.id }}</td>
+					<td>{{ spambot.timestamp|date }}</td>
+					<td><a href="{% url 'records:user' spambot.user.username %}">{{ spambot.user.username }}</td>
+					<td>{{ spambot.messages.all.0.body|escape }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>

@@ -25,7 +25,7 @@
 			{% for flood in latest_flood_list %}
 				<tr>
 					<td><input type="checkbox" name="flood_checkbox" id="flood_checkbox{{ forloop.counter }}" value="{{ flood.id }}" /></td>
-					<td><a href="{% url 'records:flood' flood.id %}">{{ flood.timestamp|date }}</a></td>
+					<td><a href="{% url 'records:flood_detail' flood.id %}">{{ flood.timestamp|date }}</a></td>
 					<td>{{ flood.room }}</td>
 					<td>{{ flood.users.count }}</td>
 					<td>{{ flood.messages.count }}</td>

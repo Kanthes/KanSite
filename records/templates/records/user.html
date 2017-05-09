@@ -12,7 +12,7 @@
 			</tr>
 			{% for flood in user.flood_set.all %}
 				<tr>
-					<td><a href="{% url 'records:flood' flood.id %}">{{ flood.id }}</a></td>
+					<td><a href="{% url 'records:flood_detail' flood.id %}">{{ flood.id }}</a></td>
 				</tr>
 			{% endfor %}
 		</table>

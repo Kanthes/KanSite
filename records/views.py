@@ -34,7 +34,7 @@ def authorize(func):
 		if(request.session.get("access_token", False) == False):
 			parameters = {
 				"client_id":settings.CLIENT_ID,
-				"redirect_uri":"http://193.111.136.150/records/access/",
+				"redirect_uri":"http://kanthes.org/records/access/",
 				"scope":'+'.join(["user_read"]),
 				"state":base64.b64encode(request.build_absolute_uri())
 			}
@@ -50,7 +50,7 @@ def access(request):
 			"client_id":settings.CLIENT_ID,
 			"client_secret":settings.CLIENT_SECRET, #Don't commit with this info in public.
 			"grant_type":"authorization_code",
-			"redirect_uri":"http://193.111.136.150/records/access/",
+			"redirect_uri":"http://kanthes.org/records/access/",
 			"scope":"user_read",
 			"code":request.GET["code"],
 		}
@@ -63,21 +63,30 @@ def access(request):
 	else:
 		return HttpResponseRedirect("/records/")
 
-# Create your views here.
-def index(request):
+#Indexes/search views.
+def flood_index(request):
 	#latest_flood_list = Flood.objects.annotate(num_users=Count('users')).filter(num_users__gte=10).order_by('-timestamp')[:5] #5 latest floods with 10 or more users involved.
 	latest_flood_list = Flood.objects.filter(timestamp__gte=datetime.now(pytz.utc)-timedelta(days=3)).order_by('-timestamp')
 	context = {'latest_flood_list':latest_flood_list}
-	return render(request, 'records/index.html', context)
+	return render(request, 'records/flood_index.html', context)
 
-def long_index(request):
+def long_flood_index(request):
 	flood_objects = Flood.objects.annotate(user_count=Count('users')).filter(user_count__gte=10, ident_msg=False, timestamp__gte=datetime(2017, 2, 1, 0, 0, 0, 0, pytz.utc)).order_by('-timestamp')
 	context = {'latest_flood_list':flood_objects}
-	return render(request, 'records/index.html', context)	
+	return render(request, 'records/flood_index.html', context)
 
-def flood(request, flood_id):
+def spampattern_index(request):
+	spampattern_objects = SpamPattern.objects.all()
+	return render(request, 'records/spampattern_index.html', {'spampattern_objects':spampattern_objects})
+
+#Individual object views.
+def flood_detail(request, flood_id):
 	flood = get_object_or_404(Flood, pk=flood_id)
-	return render(request, 'records/flood.html', {'flood':flood})
+	return render(request, 'records/flood_detail.html', {'flood':flood})
+
+def spampattern_detail(request, spampattern_id):
+	spampattern = get_object_or_404(SpamPattern, pk=spampattern_id)
+	return render(request, 'records/spampattern_detail.html', {'spampattern':spampattern})
 
 def user(request, user_name):
 	user = get_object_or_404(User, username=user_name)
@@ -87,18 +96,7 @@ def message(request, message_id):
 	message = get_object_or_404(Message, pk=message_id)
 	return render(request, 'records/message.html', {'message':message})
 
-def reports_2016(request):
-	#Create a list of dictionaries containing all the dates with reports and number of reports for that date, and then turn that list of dictionaries into a sorted list of lists.
-	date_data = Report.objects.all().extra({'date_created' : "DATE(created_timestamp)"}).values('date_created').annotate(created_count=Count('id'))
-	date_data = map(lambda x: [x['date_created'], x['created_count']], date_data)
-	date_data.sort(key=lambda x: x[0])
-	#Create a list of dictionaries containing all the hours with reports and the number of reports for that hour, and then turn that list of dictionaries into a sorted list of lists.
-	hourly_data = Report.objects.all().extra({'time_created' : "EXTRACT(HOUR FROM created_timestamp)"}).values('time_created').annotate(created_count=Count('id'))
-	hourly_data = map(lambda x: [x['time_created'], int(x['created_count'])], hourly_data)
-	hourly_data.sort(key=lambda x: x[0])
-	context = {'date_data':date_data, 'hourly_data':hourly_data}
-	return render(request, 'records/2016report.html', context)
-
+#Data compilations.
 def spamreport(request, start_year, start_month, start_day, end_year, end_month, end_day):
 	#Create datetime objects based of URL variables.
 	start_date = datetime(year=int(start_year), month=int(start_month), day=int(start_day), tzinfo=pytz.utc)

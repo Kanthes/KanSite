@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<title>Spampattern index</title>
+	</head>
+	<body>
+		<table border='1'>
+			<tr>			
+				<th>Enabled</th>
+				<th>Name</th>
+				<th>Initial text pattern</th>
+				<th>Alt text_pattern</th>
+				<th>Link patterns</th>
+				<th>Young limit</th>
+				<th>Old limit</th>
+			</tr>
+			{% for spampattern in spampattern_objects %}
+				<tr>
+					<td>{{ spampattern.enabled }}</td>
+					<td><a href="{% url 'records:spampattern_detail' spampattern.id %}">{{ spampattern.name }}</a></td>
+					<td>{{ spampattern.initial_text_pattern }}</td>
+					<td>{{ spampattern.alt_text_pattern }}</td>
+					<td>{{ spampattern.link_patterns }}</td>
+					<td>{{ spampattern.young_limit }}</td>
+					<td>{{ spampattern.old_limit }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>
