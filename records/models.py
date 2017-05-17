@@ -64,7 +64,7 @@ class SpamPattern(models.Model):
 	class SpamPattern():
 		def __init__(self, SpamPattern_object):
 			self.name = SpamPattern_object.name
-			self.initial_text_pattern = re.compile(re.sub("\{emote_string\}", settings.EMOTE_STRING, SpamPattern_object.initial_text_pattern)) if SpamPattern_object.initial_text_pattern != "" else None
+			self.initial_text_pattern = re.compile(SpamPattern_object.initial_text_pattern.replace("{emote_string}", settings.EMOTE_STRING)) if SpamPattern_object.initial_text_pattern != "" else None
 			self.alt_text_pattern = json.loads(re.sub("'", '"', SpamPattern_object.link_patterns)) if SpamPattern_object.link_patterns != "" else {}
 			self.link_patterns = json.loads(re.sub("'", '"', SpamPattern_object.link_patterns)) if SpamPattern_object.link_patterns != "" else {}
 			for key in self.link_patterns.keys():
