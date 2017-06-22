@@ -60,7 +60,7 @@ class ChatFeed():
 		if(message.username in ["moobot", "nightbot", "xanbot", "ackbot", "x20ks5pfq", "pho_test", "eixobu24", "monitorplz", "oshibookie", "dutch1616"]):
 			#logging.debug("User is in list of allowed users.") #DEBUG
 			return False
-		if(message.room in ["#forsenlol", "#anm60forjesus", "#manatails", "#csgoloungetv_ru"]):
+		if(message.room in ["#forsenlol", "#anm60forjesus", "#manatails", "#csgoloungetv_ru", "#twitchrallyred", "#twitchrallyblue"]):
 			#logging.debug("Message is from one of the ignored rooms.") #DEBUG
 			return False
 		if(message.tags.get("subscriber") == "1"):

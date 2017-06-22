@@ -188,7 +188,7 @@ class LinkBasedSpamDetector():
 			return json.loads(response)
 		else: #Redis get failed, need to manually get it.
 			try:
-				link_analysis_page = urllib2.urlopen("https://ohbot.3v.fi/query/urlquery?q={0}".format(quote(link.encode('utf-8'))), timeout=10)
+				link_analysis_page = urllib2.urlopen("https://ohbot.3v.fi/query/urlquery?q={0}".format(quote(link.encode('utf-8'))), timeout=20)
 			except urllib2.HTTPError as e:
 				if(e.code not in [404, 500]):
 					logging.info("Status code: {0}\nReason: {1}\nLink: {2}".format(e.code, e.reason.encode('utf-8'), link.encode('utf-8')))
@@ -196,11 +196,18 @@ class LinkBasedSpamDetector():
 			except SSLError:
 				return {}
 			link_analysis_text = link_analysis_page.read()
-			response = self.redis_connection.set(link, link_analysis_text)
-			if(response):
-				self.redis_connection.expire(link, 3600)
-			#logging.info("Finished analysis of link: {0}".format(link)) #DEBUG
-			return json.loads(link_analysis_text)
+			link_analysis_data = json.loads(link_analysis_text)
+			if(link_analysis_data["status"] == 504):
+				logging.info("Status code: {0}\nReason: {1}\nLink: {2}".format(link_analysis_data["status"], link_analysis_data["response"], link.encode('utf-8')))
+				return {}
+			elif(link_analysis_data["status"] == 200):
+				response = self.redis_connection.set(link, link_analysis_text)
+				if(response):
+					self.redis_connection.expire(link, 3600)
+				return link_analysis_data
+			else:
+				logging.error("Unhandled link analysis status code: {0}".format(link_analysis_data["status"]))
+				return {}
 
 	def confirmed_hit(self, tracked_user_object):
 		tracked_user_object.record()
